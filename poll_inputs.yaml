@@ -1,0 +1,6 @@
+poll_uid: bb8235679fbc2c1931103ed8f6fd5c2c # poll unique id number (e.g. bb8235679fbc2c1931103ed8fdf6c52c
+poll: 13808984 # poll number (e.g. 13808948)
+selection: 61606769 # ID of the selection to submit votes (e.g. 61606762
+referer: https%3A//highschool.athlonsports.com/minnesota/2024/05/24/vote-who-is-the-top-position-player-in-minnesota-high-school-softball # Referer information (e.g. URL of the page the vote is embedded on')
+name: Avery Lerfald, Tri-City United # Exact name of the selection
+version: 125 # Current chrome version as a whole number (e.g. 126)
