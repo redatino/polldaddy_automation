@@ -66,19 +66,19 @@ def cast_vote(url: str, vote_info: dict, cookie_id: str, hdrs: str) -> int:
         req.raise_for_status()
     except requests.exceptions.RequestException as err:
         raise f'Failed to get cookie. Error: {err}\n {req.text}'
-
+    votes = 0
     soup = BeautifulSoup(req.text, 'lxml')
     noms = soup.find_all('li')
     for _counter, info in enumerate(noms):
         if info.find('span', {'title': name}):
             try:
                 votes = info.find('span', {'class': 'pds-feedback-votes'}).text.strip()
-                votes = votes[1:7].replace(',', '').strip()
+                space = votes.find(' ')
+                votes = votes[1:space].replace(',', '').strip()
                 pct = info.find('span', {'class': 'pds-feedback-per'}).text
                 print(f'{name}: {votes}, {pct}')
             except UnboundLocalError:
-                print(f"Error getting proper values. Error output is: {noms}")
-                votes = 0
+                print(f"Error getting proper values. Resetting votes to 0")
     return int(votes)
 
 
@@ -96,16 +96,11 @@ def vote_data() -> dict:
 
 if __name__ == '__main__':
     inputs = vote_data()
-    poll_id = inputs['poll_uid']
-    poll_number = inputs['poll']
-    our_pick = inputs['selection']
-    referer = inputs['referer']
     headers = {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
                 'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/'
-                f'{inputs['version']}.0.0.0 Safari/537.36'
+                f'{inputs["version"]}.0.0.0 Safari/537.36'
               }
-    vote_name = inputs['name']
 
     tally = 0
     while True:
