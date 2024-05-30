@@ -1,85 +1,83 @@
-import random
-import sys
+'''
+Vote automatically on Polldaddy.com
+'''
 import time
 from bs4 import BeautifulSoup
 import requests
 import yaml
 
+COOKIE_URL = 'https://polldaddy.com/n'
+POLL_URL = 'https://polls.polldaddy.com/vote-js.php'
 
-def get_cookie(url: str, pollid: str, pollnum: str, hdrs: str) -> str:
+
+def get_cookie(url: str, vote_info: dict, hdrs: str) -> str:
     '''
     Fetches a cookie required for casting a vote on a Polldaddy poll.
 
     Args:
     url (str): The base URL for Polldaddy cookie generation.
-    pollid (str): The unique identifier for the poll.
-    pollnum (str): The poll number.
-    hdrs (dict): A dictionary containing request headers, including a User-Agent.
+    vote_info (dict): Necessary information for casting correct vote
+    hdrs (dict): A dictionary containing request headers, including User-Agent.
 
     Returns:
     str: The extracted cookie value from the response.
 
     Raises:
-    requests.exceptions.RequestException: If an error occurs during the request.
+    requests.exceptions.RequestException: If an error occurs during the request
     '''
+    pollid = vote_info['poll_uid']
+    pollnum = vote_info['poll']
+
     uri = f'{url}/{pollid}/{pollnum}?{int(time.time())}'
     try:
-        req = requests.get(uri, headers=hdrs)
+        req = requests.get(uri, headers=hdrs, timeout=60)
         req.raise_for_status()
     except requests.exceptions.RequestException as err:
-        raise(f'Failed to get cookie. Error: {err}\n {req.text}')
+        raise f'Failed to get cookie. Error: {err}\n {req.text}'
     end_string = req.text.index(';') - 1
     start_string = req.text.index('=') + 2
 
     return req.text[start_string:end_string]
 
-   
-def cast_vote(url: str,
-              pollnum: str,
-              choice: str,
-              ref_uri: str,
-              cookie_id,
-              hdrs: str,
-              name: str) -> int:
+
+def cast_vote(url: str, vote_info: dict, cookie_id: str, hdrs: str) -> int:
     '''
     Casts a vote on a Polldaddy poll.
 
     Args:
     url (str): The base URL for Polldaddy vote casting.
-    pollnum (str): The poll number.
-    choice (str): The vote selection value.
-    ref_uri (str): The referer URI for the vote.
+    vote_info (dict): Necessary information for casting correct vote
     cookie_id (str): The cookie value obtained from get_cookie().
-    hdrs (dict): A dictionary containing request headers, including a User-Agent.
-    name (str): The display name associated with the vote.
 
     Returns:
     int: The current vote count for the chosen option.
 
     Raises:
-    requests.exceptions.RequestException: If an error occurs during the request.
-    UnboundLocalError: If parsing the response HTML encounters unexpected structure.
+    requests.exceptions.RequestException: If an error occurs during the request
+    UnboundLocalError: If response HTML encounters unexpected HTML structure.
     '''
-    uri = f'{url}?p={pollnum}&b=0&a={choice}'\
-          f',&o=&va=16&cookie=0&tags={pollnum}-src:'\
-          f'poll-embed&n={cookie_id}&url={ref_uri}'
+    name = vote_info['name']
+
+    uri = f'{url}?p={vote_info['poll']}&b=0&a={vote_info['selection']}'\
+          f',&o=&va=16&cookie=0&tags={vote_info['poll']}-src:'\
+          f'poll-embed&n={cookie_id}&url={vote_info['referer']}'
     try:
-        req = requests.get(uri, headers=hdrs)
+        req = requests.get(uri, headers=hdrs, timeout=60)
         req.raise_for_status()
     except requests.exceptions.RequestException as err:
-        raise(f'Failed to get cookie. Error: {err}\n {req.text}')
-    
+        raise f'Failed to get cookie. Error: {err}\n {req.text}'
+
     soup = BeautifulSoup(req.text, 'lxml')
     noms = soup.find_all('li')
     for _counter, info in enumerate(noms):
         if info.find('span', {'title': name}):
             try:
                 votes = info.find('span', {'class': 'pds-feedback-votes'}).text.strip()
-                votes = votes[1:7].replace(',','').strip() 
-                pct = info.find('span', {'class': 'pds-feedback-per'}).text.strip()
+                votes = votes[1:7].replace(',', '').strip()
+                pct = info.find('span', {'class': 'pds-feedback-per'}).text
                 print(f'{name}: {votes}, {pct}')
             except UnboundLocalError:
-                print(f"Error getting proper values. Output of error is: {noms}")
+                print(f"Error getting proper values. Error output is: {noms}")
                 votes = 0
     return int(votes)
 
@@ -89,34 +87,34 @@ def vote_data() -> dict:
     Reads vote configuration data from a YAML file.
 
     Returns:
-    dict: A dictionary containing the necessary information to vote on Polldaddy.
+    dict: A dictionary containing the needed information to vote on Polldaddy.
     '''
-    with open('poll_inputs.yaml', 'r') as f:
-        data = yaml.load(f, Loader=yaml.SafeLoader)
-    return(data)
+    with open('poll_inputs.yaml', 'r', encoding='utf-8') as fp:
+        data = yaml.load(fp, Loader=yaml.SafeLoader)
+    return data
 
 
 if __name__ == '__main__':
-    cookie_url = 'https://polldaddy.com/n'
-    poll_url = 'https://polls.polldaddy.com/vote-js.php'
-    
     inputs = vote_data()
     poll_id = inputs['poll_uid']
     poll_number = inputs['poll']
     our_pick = inputs['selection']
-    referer =  inputs['referer']
-    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
-                            f'(KHTML, like Gecko) Chrome/{inputs['version']}.0.0.0 Safari/537.36'
+    referer = inputs['referer']
+    headers = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+                'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/'
+                f'{inputs['version']}.0.0.0 Safari/537.36'
               }
     vote_name = inputs['name']
-    
+
     tally = 0
     while True:
         prev = tally
-        cookie = get_cookie(cookie_url, poll_id, poll_number, headers)
-        tally = cast_vote(poll_url, poll_number, our_pick, referer, cookie, headers, vote_name)
+        cookie = get_cookie(COOKIE_URL, inputs, headers)
+        tally = cast_vote(POLL_URL, inputs, cookie, headers)
         if prev == tally:
-            print(f'Total not incrementing at {time.ctime()}. Sleeping for 60 seconds!')
+            print(f'Total not incrementing at {time.ctime()}. '
+                  'Sleeping for 60 seconds!')
             time.sleep(60)
         else:
             time.sleep(5)
