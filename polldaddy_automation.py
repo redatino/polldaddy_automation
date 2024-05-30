@@ -75,7 +75,7 @@ def cast_vote(url: str,
         if info.find('span', {'title': name}):
             try:
                 votes = info.find('span', {'class': 'pds-feedback-votes'}).text.strip()
-                votes = votes[1:6].replace(',','').strip() 
+                votes = votes[1:7].replace(',','').strip() 
                 pct = info.find('span', {'class': 'pds-feedback-per'}).text.strip()
                 print(f'{name}: {votes}, {pct}')
             except UnboundLocalError:
