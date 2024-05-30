@@ -51,7 +51,7 @@ def cast_vote(url: str,
                 pct = info.find('span', {'class': 'pds-feedback-per'}).text.strip()
                 print(f'{name}: {votes}, {pct}')
             except UnboundLocalError:
-                print(f"Error getting values: {info.find('span', {'class': 'pds-feedback-votes'}).text.strip()}")
+                print(f"Error getting proper values. Output of error is: {noms}")
                 votes = 0
     return int(votes)
 
