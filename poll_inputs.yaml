@@ -1,6 +1,6 @@
-poll_uid:  # poll unique id number (e.g. bb8235679fbc2c1931103ed8fdf6c52c)
+poll_uid:  # poll unique id number (e.g. bb8235679fbc2c1931103ed8fdf6c52c
 poll:  # poll number (e.g. 13808948)
-selection:  # ID of the selection to submit votes (e.g. 61606769)
+selection:  # ID of the selection to submit votes (e.g. 61606762
 referer:  # Referer information (e.g. URL of the page the vote is embedded on')
 name:  # Exact name of the selection
 version:  # Current chrome version as a whole number (e.g. 126)

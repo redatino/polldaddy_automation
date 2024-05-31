@@ -1,5 +1,8 @@
 '''
 Vote automatically on Polldaddy.com
+https://github.com/wrestleraaron/polldaddy_automation
+GPLv3 license
+May 2024
 '''
 import time
 from bs4 import BeautifulSoup
@@ -33,7 +36,7 @@ def get_cookie(url: str, vote_info: dict, hdrs: str) -> str:
         req = requests.get(uri, headers=hdrs, timeout=60)
         req.raise_for_status()
     except requests.exceptions.RequestException as err:
-        raise f'Failed to get cookie. Error: {err}\n {req.text}'
+        print(f'Failed to get cookie. Error: {err}\n {req.text}')
     end_string = req.text.index(';') - 1
     start_string = req.text.index('=') + 2
 
@@ -65,7 +68,7 @@ def cast_vote(url: str, vote_info: dict, cookie_id: str, hdrs: str) -> int:
         req = requests.get(uri, headers=hdrs, timeout=60)
         req.raise_for_status()
     except requests.exceptions.RequestException as err:
-        raise f'Failed to get cookie. Error: {err}\n {req.text}'
+        print(f'Failed to get cookie. Error: {err}\n {req.text}')
     votes = 0
     soup = BeautifulSoup(req.text, 'lxml')
     noms = soup.find_all('li')
