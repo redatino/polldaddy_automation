@@ -12,9 +12,9 @@ As of May 2024 there is rate limiting at polldaddy to prevent too many votes fro
 
 Occassionally the HTML returned from polldaddy.com will not parse correctly and cause a failure. This is a temporary error and restarting the application usually resolves this, but it does need to be monitored.
 
-## Badges
+## License
 
-[![GPLv3 License](https://img.shields.io/badge/License-GPL%20v3-yellow.svg)](https://opensource.org/licenses/)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
 
 
