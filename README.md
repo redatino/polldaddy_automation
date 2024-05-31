@@ -1,3 +1,4 @@
+
 # polldaddy_automation
 
 This project is a python function (with a Windows executable) that allows for automated voting on polldaddy.com. Required information is: poll uniqueid, poll number, selection id number, referer, and full name of the selection. 
@@ -7,6 +8,9 @@ The information is updated in poll_inputs.yaml which needs to be stored in the s
 As of May 2024 there is rate limiting at polldaddy to prevent too many votes from being submitted. It appeared to be based on IP address, and the 60 second wait is required when the rate limit is hit and the vote does not increment
 
 
+## Known Issues
+
+Occassionally the HTML returned from polldaddy.com will not parse correctly and cause a failure. This is a temporary error and restarting the application usually resolves this, but it does need to be monitored.
 
 ## Badges
 
