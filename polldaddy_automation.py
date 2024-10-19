@@ -5,7 +5,6 @@ GPLv3 license
 May 2024
 '''
 import time
-from bs4 import BeautifulSoup
 import requests
 import yaml
 
@@ -43,7 +42,7 @@ def get_cookie(url: str, vote_info: dict, hdrs: str) -> str:
     return req.text[start_string:end_string]
 
 
-def cast_vote(url: str, vote_info: dict, cookie_id: str, hdrs: str) -> int:
+def cast_vote(url: str, vote_info: dict, cookie_id: str, hdrs: str) :
     '''
     Casts a vote on a Polldaddy poll.
 
@@ -61,28 +60,17 @@ def cast_vote(url: str, vote_info: dict, cookie_id: str, hdrs: str) -> int:
     '''
     name = vote_info['name']
 
-    uri = f'{url}?p={vote_info['poll']}&b=0&a={vote_info['selection']}'\
-          f',&o=&va=16&cookie=0&tags={vote_info['poll']}-src:'\
-          f'poll-embed&n={cookie_id}&url={vote_info['referer']}'
+
+    uri = f'{url}?p=14513898&b=0&a=64528431,&o=&va=16&cookie=0&tags=14513898-src:poll-oembed-simple&n={cookie_id}&url=https%3A//www.si.com/high-school/maryland/top-10-high-school-mascots-in-maryland-vote-for-the-best-01jabjn1jkb1'
     try:
         req = requests.get(uri, headers=hdrs, timeout=60)
         req.raise_for_status()
     except requests.exceptions.RequestException as err:
         print(f'Failed to get cookie. Error: {err}\n {req.text}')
-    votes = 0
-    soup = BeautifulSoup(req.text, 'lxml')
-    noms = soup.find_all('li')
-    for _counter, info in enumerate(noms):
-        if info.find('span', {'title': name}):
-            try:
-                votes = info.find('span', {'class': 'pds-feedback-votes'}).text.strip()
-                space = votes.find(' ')
-                votes = votes[1:space].replace(',', '').strip()
-                pct = info.find('span', {'class': 'pds-feedback-per'}).text
-                print(f'{name}: {votes}, {pct}')
-            except UnboundLocalError:
-                print(f"Error getting proper values. Resetting votes to 0")
-    return int(votes)
+
+    tester2 = req.text.__contains__('Thank you for voting!')
+    #print(tester2)
+    return tester2
 
 
 def vote_data() -> dict:
@@ -104,15 +92,18 @@ if __name__ == '__main__':
                 'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/'
                 f'{inputs["version"]}.0.0.0 Safari/537.36'
               }
-
-    tally = 0
+    totalCount=0
     while True:
-        prev = tally
         cookie = get_cookie(COOKIE_URL, inputs, headers)
-        tally = cast_vote(POLL_URL, inputs, cookie, headers)
-        if prev == tally:
-            print(f'Total not incrementing at {time.ctime()}. '
+        #print(cookie)
+        voteWorked = cast_vote(POLL_URL, inputs, cookie, headers)
+
+        if voteWorked:
+            #print("Good")
+            time.sleep(.05)
+            totalCount=totalCount+1
+            print(totalCount, end=",")
+        else:
+            print(f'\nBlocked at {time.ctime()}. '
                   'Sleeping for 60 seconds!')
             time.sleep(60)
-        else:
-            time.sleep(5)
